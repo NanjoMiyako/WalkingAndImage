@@ -1,1 +1,1 @@
-python WalkingAndImage.py C:\hogehoge\ImageList.txt 5.0 1.0
+python WalkingAndImage.py C:\hogehoge\ImageList.txt 1.0 1.0 5

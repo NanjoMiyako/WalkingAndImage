@@ -23,7 +23,7 @@ args = sys.argv
 
 print(len(sys.argv))
 
-if len(args) < 4:
+if len(args) < 5:
  exit()
 
 #diffFolder = args[1];
@@ -33,7 +33,8 @@ file1 = open(ImageFilePath, 'r')
 #差分判定率
 DiffJudgePercent = float(args[2])
 TimeSpan = float(args[3])
-timeSpan = 0.1
+walkCountThrethold = int(args[4])
+walkCount = walkCountThrethold;
 
 # VideoCapture オブジェクトを取得します
 g_capture = cv2.VideoCapture(0)
@@ -62,7 +63,7 @@ def Play():
     global MoviePlayFlg
     global DiffJudgePercent
     
-    global MatchCount
+    global walkCount
     
     timeStart = 0.0
     timeEnd = 0.0
@@ -72,9 +73,6 @@ def Play():
     
     idx1 = 0
     while(1):
-        if idx1 >= len(Lines1):
-            break
-            
         ret, frame = g_capture.read()
         img1 = frame;        
         
@@ -84,17 +82,22 @@ def Play():
         
         cv2.imshow('frame', frame)
         
-        line1 = Lines1[idx1]
+        if idx1 < len(Lines1):
+            line1 = Lines1[idx1]
+        elif idx1 == len(Lines1):
+            line1 = line1
+        else:
+            break
+            
         line1 = line1.replace( '\n' , '' )
         if line1 == '':
             break
         
 
             
-
-            
         currentTime = time.time()
         if timeStart == 0:
+            img2 = img1
             timeStart = time.time()
             timeEnd = time.time()
 
@@ -107,22 +110,30 @@ def Play():
             
         timeDiff = timeEnd - timeStart
         
-        if(timeDiff >= timeSpan):
+        if(timeDiff >= TimeSpan):
             img3 = Diff(img1, img2)
             WRate = calcWhiteRate(img3)
-            #print(WRate)
+            timeStart = currentTime
             
+            print(WRate)
             if WRate >= DiffJudgePercent:
+                walkCount = walkCount + 1
+                str1 = "walkCount:"
+                str1 += str(walkCount)
+                print(str1)
+                
+            
+            if WRate >= DiffJudgePercent and walkCount >= walkCountThrethold:
+                walkCount = 0
                 idx1 = idx1 + 1
                 
                 print(line1)
                 frame = cv2.imread(line1)    
                 cv2.imshow('frame3', frame)
                 
-        else:
-            timeStart = currentTime
+
             
-        img2 = img1
+            img2 = img1
        
 
     g_capture.release()
